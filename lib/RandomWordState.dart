@@ -14,6 +14,7 @@ class RandomWordsState extends State<RandomWords>{
 
   final _sugerencias = <WordPair>[]; //"_" refuerza la privacidad en Dart, y "<WordPair>[]" es una lista
   final _fuenteGrande = const TextStyle(fontSize: 18.0);
+  final _guardados = Set<WordPair>(); //Almacena los favoritos
 
   //Aquí se generarán los pares de palabras al azar
   @override
@@ -22,6 +23,9 @@ class RandomWordsState extends State<RandomWords>{
     return Scaffold (     //Scaffold ofrece una estructura estándar para la app
       appBar: AppBar(     //Contiene una AppBar, un title y un body
         title: Text('Startup Name Generator'),
+        actions: <Widget>[
+          new IconButton(icon: const Icon(Icons.list), onPressed: _pushSaved) //ícono más evento
+        ],
       ),
       body: _construirSugerencias(),  //El body es construido con un método
     );
@@ -60,11 +64,61 @@ class RandomWordsState extends State<RandomWords>{
 
   /*Método que despliega los pares de palabras en la lista*/
   Widget _construirFila(WordPair pair) {
+
+    final bool yaGuardado = _guardados.contains(pair); //Check
+
     return ListTile(
       title: Text(
         pair.asPascalCase,
         style: _fuenteGrande,
       ),
+
+      trailing: new Icon( //Ícono de corazón para guardar (sin interacción)
+        yaGuardado? Icons.favorite : Icons.favorite_border,
+        color: yaGuardado? Colors.red : null,
+      ),
+
+      onTap: (){  //Interactividad. Agregar o quitar de favoritos
+        setState((){  //llama a build() para actualizar UI (reactividad)
+          if(yaGuardado){
+            _guardados.remove(pair);
+          }else{
+            _guardados.add(pair);
+          }
+        });
+      },
+    );
+  }
+
+  //Método que controla el click de botón de nueva página para ver favs
+  void _pushSaved(){
+    Navigator.of(context).push( //"Empuje" a la nueva route (página)
+      new MaterialPageRoute<void>(
+        builder: (BuildContext context){
+          final Iterable<ListTile> tiles = _guardados.map(
+              (WordPair pair){
+                return new ListTile(
+                  title: new Text(
+                    pair.asPascalCase,
+                    style: _fuenteGrande,
+                  ),
+                );
+              },
+          );
+          final List<Widget> dividido = ListTile.divideTiles(
+            context: context,
+            tiles: tiles,
+          )
+          .toList();
+
+          return new Scaffold( //Estructura de la nueva route
+            appBar: new AppBar(
+              title: const Text('Saved Suggestions'),
+            ),
+            body: new ListView(children: dividido),
+          );
+        }
+      )
     );
   }
 }

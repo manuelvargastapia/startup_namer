@@ -16,6 +16,9 @@ class MyApp extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(               //Flutter promueve Material Design
       title: 'Startup Name Generator',
+      theme: ThemeData(             //Clase que permite modificar el tema de la app
+        primaryColor: Colors.white
+      ),
       home: RandomWords(),
     );
   }
